@@ -63,7 +63,7 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 *   **Error Handling:**
     *   API request errors (network, HTTP status codes) will typically fail the 'extract' or 'enrich' task.
     *   Errors fetching *individual* movie details in the 'enrich' task are logged, and the original movie data (without enrichment) is carried forward to allow the DAG to process other movies.
-    *   Parsing errors during transformation (e.g., unexpected budget format) are logged, and default values (like 0 for budget, None for decade) are often used to prevent task failure, though this depends on the specific cleaning logic.
+    *   Parsing errors during transformation (e.g., unexpected budget or year format) are logged, and default values (like 0 for budget, None for year) are often used to prevent task failure, though this depends on the specific cleaning logic.
 *   **Dependencies:** Requires 'requests' for API calls and 'pandas' for data transformation and CSV export. These are installed via 'requirements.txt'.
 *   **Output Schema:** The final CSV adheres to the specified schema: 'film', 'year', 'decade', 'wikipedia_url', 'is_oscar_winner' (boolean), 'original_budget' (raw string), 'budget_usd' (integer).
 
