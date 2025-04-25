@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 
+
 import pandas as pd
 import requests
 from airflow.decorators import dag, task
@@ -257,7 +258,10 @@ def yipitdata_oscar_pipeline():
 
         # 1. Clean Year and Create Decade column
         if 'year_raw' in df.columns:
-            df['year'] = df['year_raw'].apply(lambda x: re.search(r'\b(\d{4})\b', str(x)).group(1) if re.search(r'\b(\d{4})\b', str(x)) else None).astype('Int64')
+            #df['year'] = df['year_raw'].apply(lambda x: re.search(r'\b(\d{4})\b', str(x)).group(1) if re.search(r'\b(\d{4})\b', str(x)) else None).astype('Int64')
+            df['year'] = df['year_raw'].astype(str).str.extract(r'\b(\d{4})\b', expand=False)
+            # Convierte a Int64 (nullable integer), manejando los NaN resultantes de .str.extract
+            df['year'] = pd.to_numeric(df['year'], errors='coerce').astype('Int64')
             df['decade'] = df['year'].apply(get_decade).astype('Int64') # Use nullable Int
         else:
             logging.error("Column 'year_raw' (renamed from 'Year') not found. Cannot process year/decade.")

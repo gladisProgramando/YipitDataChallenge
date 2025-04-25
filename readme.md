@@ -10,27 +10,25 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 ## Setup and Running
 
 1.  **Clone/Download:** Get the project files onto your local machine.
-2.  **Environment File:** Create a '.env' file in the project root directory (where 'docker-compose.yaml' is located). Copy the contents from the provided example '.env' file.
-    *   **Important:** Adjust 'AIRFLOW_UID' and 'AIRFLOW_GID' in '.env' to match your host system's user and group ID to avoid file permission issues with mounted volumes (like the 'output' directory). Run 'id -u' and 'id -g' in your terminal to find these values.
+2.  **Environment File:** In the '.env' file I did not add 'AIRFLOW_UID' and 'AIRFLOW_GID', becuase I am using windows system, but if you are using other o.s, please  in '.env' uncommented those values. To know the values, please Run 'id -u' and 'id -g' in your terminal to find these values.
 3.  **Build the Custom Airflow Image:**
-    '''bash
-    docker-compose build
-    '''
-4.  **Initialize Airflow Database & User:** (Only needs to be run once)
-    '''bash
+    Run the instruction: forcing a clean building
+    docker-compose build --no-cache
+4.  **Initialize Airflow Database & User:** 
+    Run the instruction: (Only needs to be run once)
     docker-compose run --rm airflow-webserver airflow db init
     # Or use the airflow-init service defined in docker-compose:
     # docker-compose up airflow-init # This will run init and create the default user
     '''
-    *(The provided 'docker-compose.yaml' includes an 'airflow-init' service that handles 'db init' and user creation automatically when starting up for the first time.)*
+    *(The provided 'docker-compose.yml' includes an 'airflow-init' service that handles 'db init' and user creation automatically when starting up for the first time.)*
 
 5.  **Start Airflow Services:**
-    '''bash
+    Run the instructions: 
     docker-compose up -d
-    '''
+
     This command starts the Airflow webserver, scheduler, postgres database (and Redis/worker if configured) in detached mode.
 
-6.  **Access Airflow UI:** Open your web browser and navigate to 'http://localhost:8080'.
+6.  **Access Airflow UI:** Open your web browser and navigate to http://localhost:8080
     *   Login with the default credentials (unless changed in 'airflow-init' command or manually):
         *   Username: 'admin'
         *   Password: 'admin'
@@ -51,7 +49,7 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
     *   Assumes the 'Detail URL' page might return JSON *or* HTML. The current implementation prioritizes JSON but includes logging/warnings for HTML and a placeholder for potential future HTML parsing (e.g., using BeautifulSoup4). It attempts a very basic regex for budget from HTML as a fallback, but this is fragile.
     *   Assumes the key names in the JSON responses are as inferred (e.g., 'Film', 'Year', 'Oscar Winner', 'Detail URL', 'Budget' from detail page). Renaming is handled in the 'transform_data' task.
 *   **Budget Cleaning ('clean_budget' function):**
-    *   **NaN/Missing:** Converts null, NaN, empty strings, or "N/A" to '0'.
+    *   **NaN/Missing:** To Convert null, NaN, empty strings, or "N/A" to '0'.
     *   **Ranges:** Detects ranges (e.g., "$10M - $20M", "£5-7 million") and uses the *lowest* value found.
     *   **Currency Conversion:** Detects common currency symbols/codes (£, $, €, EUR, GBP, CAD, etc.) at the start or end of the budget string. If a known non-USD currency is found, it converts the value to USD using *fixed placeholder exchange rates* defined in 'dags/utils/cleaning.py'. **This is a major simplification.** A production system would need historical exchange rates or an API. If no currency symbol/code is detected, **USD is assumed**.
     *   **Multipliers:** Handles 'M'/'million' (1,000,000) and 'K'/'thousand' (1,000).
@@ -75,16 +73,6 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 ## Stopping Airflow
 
 To stop the Airflow containers:
-'''bash
+Run the instructions: 
 docker-compose down
-Use code with caution.
-Markdown
 Use docker-compose down -v to also remove the persistent database volume (airflow-db-volume).
----
-
-**To Submit:**
-
-1.  Ensure all the files ('dags/yipitdata_oscar_dag.py', 'dags/utils/cleaning.py', 'tests/test_cleaning.py', 'Dockerfile', 'docker-compose.yaml', 'requirements.txt', '.env', 'README.md') are in a single root directory.
-2.  Create an empty 'output/' directory in the root.
-3.  Create an empty 'logs/' directory in the root.
-4.  Create a ZIP archive of this root directory. Name it appropriately (e.g., 'yourname_yipitdata_assignment.zip').
