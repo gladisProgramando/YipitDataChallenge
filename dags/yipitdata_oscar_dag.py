@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
-
+import re
 
 import pandas as pd
 import requests
@@ -20,6 +20,7 @@ except ImportError:
     logging.error("Could not import cleaning functions. Ensure utils/cleaning.py is accessible.")
     # Define dummy functions to allow DAG parsing
     def get_decade(year_input: any) -> int | None: return None
+
     def clean_budget(budget_input: any) -> int: return 0
 
 
@@ -127,8 +128,6 @@ def yipitdata_oscar_pipeline():
         logging.info(f"Finished extraction. Total movies fetched: {len(all_movies)}")
         if not all_movies:
             logging.warning("Extraction resulted in an empty list of movies.")
-            # Optionally raise an error if this is unexpected
-            # raise ValueError("No movies were extracted from the API.")
         return all_movies
 
     @task(max_active_tis_per_dag=5) # Limit concurrent detail fetches if needed
@@ -162,10 +161,6 @@ def yipitdata_oscar_pipeline():
                     detail_url = requests.compat.urljoin(API_BASE_URL, detail_url)
 
                 response = requests.get(detail_url, timeout=20)
-                # It seems the detail pages might be HTML, not JSON! Need to parse HTML.
-                # Let's assume for now it *might* return JSON, but plan for HTML.
-                # For this example, we'll prioritize a 'Budget' field if JSON, otherwise log warning.
-                # A real implementation would need BeautifulSoup or similar for HTML parsing.
 
                 if 'application/json' in response.headers.get('Content-Type', ''):
                      response.raise_for_status()
@@ -176,11 +171,6 @@ def yipitdata_oscar_pipeline():
                      logging.warning(f"Received HTML page for '{movie_title}' detail URL ({detail_url}). Budget extraction might require HTML parsing (not implemented in this basic version).")
                      # Placeholder: create an empty detail_data or try regex if format is simple/consistent
                      detail_data = {} # Cannot parse HTML here easily
-                     # Example Regex (Very Fragile - requires inspecting HTML source):
-                     # budget_match = re.search(r'Budget:\s*.*?([\$\£\€]?[\d,.\s]+(?:million|thousand|M|K)?)', response.text, re.IGNORECASE)
-                     # if budget_match:
-                     #     detail_data['Budget'] = budget_match.group(1).strip()
-                     #     logging.info(f"Attempted regex budget extraction from HTML: {detail_data['Budget']}")
 
                 else:
                     logging.warning(f"Unexpected content type '{response.headers.get('Content-Type')}' for '{movie_title}' from {detail_url}. Status: {response.status_code}")
@@ -206,7 +196,7 @@ def yipitdata_oscar_pipeline():
                  logging.error(f"Unexpected error processing details for '{movie_title}' ({detail_url}): {e}")
                  enriched_movies.append(movie) # Keep original data
 
-            time.sleep(0.3) # Be polite to the API
+            time.sleep(0.3) 
 
         logging.info(f"Finished enrichment. Processed {len(enriched_movies)} records.")
         return enriched_movies
@@ -221,14 +211,14 @@ def yipitdata_oscar_pipeline():
         """
         if not movies:
             logging.warning("No movies received for transformation.")
-            # Return empty DataFrame with expected columns?
+            # Return empty DataFrame with expected columns
             return pd.DataFrame(columns=['film', 'year', 'decade', 'wikipedia_url', 'is_oscar_winner', 'original_budget', 'budget_usd'])
 
         df = pd.DataFrame(movies)
         logging.info(f"Starting transformation of {len(df)} records. Initial columns: {df.columns.tolist()}")
 
         # Rename columns early if they differ from expected names (adjust based on actual API response)
-        # Example renames (adjust based on actual keys in `movies` dicts):
+        # Example renames (adjust based on actual keys in 'movies' dicts):
         rename_map = {
             'Film': 'film',
             'Year': 'year_raw', # Keep raw year for reference if needed
@@ -257,12 +247,16 @@ def yipitdata_oscar_pipeline():
                 df[col] = None
 
         # 1. Clean Year and Create Decade column
-        if 'year_raw' in df.columns:
-            #df['year'] = df['year_raw'].apply(lambda x: re.search(r'\b(\d{4})\b', str(x)).group(1) if re.search(r'\b(\d{4})\b', str(x)) else None).astype('Int64')
-            df['year'] = df['year_raw'].astype(str).str.extract(r'\b(\d{4})\b', expand=False)
-            # Convierte a Int64 (nullable integer), manejando los NaN resultantes de .str.extract
-            df['year'] = pd.to_numeric(df['year'], errors='coerce').astype('Int64')
-            df['decade'] = df['year'].apply(get_decade).astype('Int64') # Use nullable Int
+        if 'year_raw' in df.columns :
+            if df['year_raw'].notna().any():
+                df['year'] = df['year_raw'].apply(lambda x: re.search(r'\b(\d{4})\b', str(x)).group(1) if re.search(r'\b(\d{4})\b', str(x)) else None).astype('Int64')
+                decade_series = df['year'].apply(get_decade)
+                numeric_decade_series = pd.to_numeric(decade_series, errors='coerce')
+                df['decade'] = numeric_decade_series.astype('Int64')
+            else:
+               logging.error("Column 'year_raw  (renamed from 'Year')' None.") 
+               df['year'] = None
+               df['decade'] = None
         else:
             logging.error("Column 'year_raw' (renamed from 'Year') not found. Cannot process year/decade.")
             df['year'] = None

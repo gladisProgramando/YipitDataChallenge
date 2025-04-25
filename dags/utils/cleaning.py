@@ -32,14 +32,21 @@ def get_decade(year_input: any) -> int | None:
         return None
     try:
         # Handle cases like "1999 (details)" or float years like 1999.0
-        year_str = str(year_input)
-        match = re.search(r'\b(\d{4})\b', year_str) # Find the first 4-digit number
-        if match:
-            year = int(match.group(1))
-            if 1800 < year < 2100: # Basic sanity check for movie years
-                return (year // 10) * 10
+        #year_str = str(year_input)
+        #match = re.search(r'\b(\d{4})\b', year_str) # Find the first 4-digit number
+        #words = year_str.split() # Split the string by whitespace
+        #year = None
+        #for word in words:
+            # Check if the word consists only of digits AND has length 4
+         #   if word.isdigit() and len(word) == 4:
+          #      year = word 
+
+        if year_input != None:
+            #year = int(match.group(1))
+            if 1800 < year_input < 2100: # Basic sanity check for movie years
+                return (year_input // 10) * 10
             else:
-                logging.warning(f"Year {year} seems out of plausible range, treating as invalid.")
+                logging.warning(f"Year {year_input} seems out of plausible range, treating as invalid.")
                 return None
         else:
              logging.warning(f"Could not parse a 4-digit year from input: {year_input}")
