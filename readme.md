@@ -7,7 +7,9 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 *   Docker (version 27.+)
 
     ![alt text](image.png)
-*   Docker Compose (version v2.0.0+)
+*   Docker Compose (version v2.+)
+
+    ![alt text](image-1.png)
 
 ## Setup and Running
 
@@ -70,9 +72,3 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 *   **Budget Cleaning:** The 'clean_budget' function addresses the requirements for handling NaNs, ranges, and currency conversion (using placeholder rates).
 *   **Unit Tests:** Basic unit tests for 'get_decade' and 'clean_budget' helper functions are provided in 'tests/test_cleaning.py'. These can be run locally using 'pytest' (install 'pytest' via pip if not already installed). Navigate to the project root and run 'pytest'.
 
-## Stopping Airflow
-
-To stop the Airflow containers:
-Run the instructions: 
-docker-compose down
-Use docker-compose down -v to also remove the persistent database volume (airflow-db-volume).
