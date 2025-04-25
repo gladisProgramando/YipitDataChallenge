@@ -5,6 +5,7 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 ## Requirements
 
 *   Docker (version 27.+)
+
     ![alt text](image.png)
 *   Docker Compose (version v2.0.0+)
 
@@ -18,9 +19,7 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 4.  **Initialize Airflow Database & User:** 
     Run the instruction: (Only needs to be run once)
     docker-compose run --rm airflow-webserver airflow db init
-    # Or use the airflow-init service defined in docker-compose:
-    # docker-compose up airflow-init # This will run init and create the default user
-    '''
+    **NOTE:** 
     *(The provided 'docker-compose.yml' includes an 'airflow-init' service that handles 'db init' and user creation automatically when starting up for the first time.)*
 
 5.  **Start Airflow Services:**
