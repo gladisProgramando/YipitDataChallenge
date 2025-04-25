@@ -1,0 +1,6 @@
+apache-airflow>=2.5.0,<2.8.0 # Use a specific range compatible with Docker image
+pandas>=1.5,<2.1
+requests>=2.28,<2.32
+# Add other dependencies if needed, e.g., beautifulsoup4 if HTML parsing is implemented
+# Add pytest for running tests locally or in CI
+pytest>=7.0,<8.0
