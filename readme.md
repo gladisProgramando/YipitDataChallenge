@@ -13,7 +13,7 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 
 ## Setup and Running
 
-1.  **Clone/Download:** Get the project files onto your local machine.
+1.  **Clone/Download:** Get the project files onto your local machine. (mi github:  https://github.com/gladisProgramando/YipitDataChallenge)
 2.  **Environment File:** In the '.env' file I did not add 'AIRFLOW_UID' and 'AIRFLOW_GID', becuase I am using windows system, but if you are using other o.s, please  in '.env' uncommented those values. To know the values, please Run 'id -u' and 'id -g' in your terminal to find these values.
 3.  **Build the Custom Airflow Image:**
     Run the instruction: forcing a clean building
