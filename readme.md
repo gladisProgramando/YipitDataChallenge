@@ -4,7 +4,8 @@ This project implements an Apache Airflow pipeline to scrape Oscar-nominated mov
 
 ## Requirements
 
-*   Docker (version 20.10.0+)
+*   Docker (version 27.+)
+    ![alt text](image.png)
 *   Docker Compose (version v2.0.0+)
 
 ## Setup and Running
