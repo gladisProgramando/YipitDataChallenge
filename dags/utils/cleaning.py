@@ -23,23 +23,12 @@ EXCHANGE_RATES = {
 # --- Year Cleaning ---
 
 def get_decade(year_input: any) -> int | None:
-    """
-    Cleans the year input and returns the starting year of its decade.
-    Example: 1997 -> 1990, "1983" -> 1980.
-    Returns None if year cannot be reliably determined.
-    """
     if year_input is None or math.isnan(year_input):
         return None
     try:
-        # Handle cases like "1999 (details)" or float years like 1999.0
-        #year_str = str(year_input)
-        #match = re.search(r'\b(\d{4})\b', year_str) # Find the first 4-digit number
-        #words = year_str.split() # Split the string by whitespace
-        #year = None
-        #for word in words:
-            # Check if the word consists only of digits AND has length 4
-         #   if word.isdigit() and len(word) == 4:
-          #      year = word 
+        """
+            Validating a valid year and calculating the decade
+        """
 
         if year_input != None:
             #year = int(match.group(1))
