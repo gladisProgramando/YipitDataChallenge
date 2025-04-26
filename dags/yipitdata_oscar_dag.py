@@ -263,7 +263,7 @@ def yipitdata_oscar_pipeline():
         for col in required_cols:
             if col not in df.columns:
                 logging.warning(f"Column '{col}' not found in data, adding as empty.")
-                df[col] = None
+                df[col] = pd.NA
 
         # 1. Clean Year and Create Decade column
         if 'year_raw' in df.columns :
@@ -280,7 +280,7 @@ def yipitdata_oscar_pipeline():
             logging.error("Column 'year_raw' (renamed from 'Year') not found. Cannot process year/decade.")
             df['year'] = None
             df['decade'] = None
-        logging.info(f"year_raw value TYPPPPPPEEEEE.{df['decade'].dtype}")
+
         # 2. Clean Budget (Bonus)
         if 'original_budget' in df.columns:
              logging.info("Cleaning budget column...")
@@ -334,7 +334,23 @@ def yipitdata_oscar_pipeline():
 
         # Convert DataFrame to list of dicts for XComs (Airflow best practice for moderate data size)
         # If data is very large, save to intermediate file and pass path via XComs.
-        return df_transformed.to_dict('records')
+        #a = df_transformed.to_dict('records')
+        #logging.info(f"DICTIONARY: >>>>>>>>>>>>>> {a}")
+        df_final_for_xcom = df_transformed.astype(object).where(pd.notnull(df_transformed), None)
+        logging.info(f"Sample data after NaN -> None conversion:\n{df_final_for_xcom.head().to_string()}")
+        # -------------------------------------------------------------------------------
+
+        # Convert the cleaned DataFrame (without NaNs) to list of dicts for XComs
+        result_list = df_final_for_xcom.to_dict('records')
+
+        # Optional: Log a sample of the final list to ensure None is present
+        if result_list:
+             logging.info(f"Sample record being pushed to XCom: {result_list[0]}")
+        else:
+            logging.warning("Result list for XCom is empty.")
+
+        return result_list 
+        #return df_transformed.to_dict('records')
 
     @task()
     def export_to_csv(movies_transformed: List[Dict[str, Any]]):
@@ -349,7 +365,6 @@ def yipitdata_oscar_pipeline():
 
 
         df_final = pd.DataFrame(movies_transformed)
-        logging.info(f"After exported >>>>>>>>>> {df_final}")
         output_path = OUTPUT_DIR / OUTPUT_FILENAME
 
         try:

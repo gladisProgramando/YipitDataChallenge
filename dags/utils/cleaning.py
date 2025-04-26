@@ -2,6 +2,7 @@
 import re
 import math
 import logging
+import pandas as pd
 from decimal import Decimal, InvalidOperation
 
 # --- Constants ---
@@ -25,11 +26,11 @@ EXCHANGE_RATES = {
 def get_decade(year_input: any) -> int | None:
     
     if year_input is None:
-        return 0
+        return None
     try:
         int(year_input)
     except (ValueError, TypeError):
-        return 0
+        return None
 
     try:
         """
@@ -39,11 +40,11 @@ def get_decade(year_input: any) -> int | None:
                 return (int(year_input) // 10) * 10
         else:
                 logging.warning(f"Year {year_input} seems out of plausible range, treating as invalid.")
-                return 0
+                return None
 
     except (ValueError, TypeError) as e:
         logging.warning(f"Error converting year input '{year_input}' to decade: {e}")
-        return 0
+        return None
 
 # --- Budget Cleaning (Bonus) ---
 
