@@ -334,8 +334,6 @@ def yipitdata_oscar_pipeline():
 
         # Convert DataFrame to list of dicts for XComs (Airflow best practice for moderate data size)
         # If data is very large, save to intermediate file and pass path via XComs.
-        #a = df_transformed.to_dict('records')
-        #logging.info(f"DICTIONARY: >>>>>>>>>>>>>> {a}")
         df_final_for_xcom = df_transformed.astype(object).where(pd.notnull(df_transformed), None)
         logging.info(f"Sample data after NaN -> None conversion:\n{df_final_for_xcom.head().to_string()}")
         # -------------------------------------------------------------------------------
@@ -350,12 +348,10 @@ def yipitdata_oscar_pipeline():
             logging.warning("Result list for XCom is empty.")
 
         return result_list 
-        #return df_transformed.to_dict('records')
 
     @task()
     def export_to_csv(movies_transformed: List[Dict[str, Any]]):
 
-        logging.info(f"movies_transformed !!!!!!!!!!!!!!! {movies_transformed}")
         """
         Saves the transformed movie data to a CSV file.
         """
